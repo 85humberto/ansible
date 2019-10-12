@@ -66,6 +66,7 @@
       - firefox-esr-l10n-pt-br
       - webext-ublock-origin
       - keepassxc
+      - firmware-realtek
     when: ansible_os_family == 'Debian'
   
   - name: Instala módulo WL (Wireless)
