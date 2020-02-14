@@ -1,0 +1,163 @@
+- name: run the playbook tasks on the localhost
+  hosts: 127.0.0.1
+  connection: local
+
+  roles:
+    - flashplayer
+    - java8-oracle
+
+  tasks:
+
+  - name: Configura o source.list
+    copy:
+      content: |
+        # Original APT package sources gathered by Ansible
+        deb http://debian.pop-sc.rnp.br/debian buster main contrib non-free
+        deb http://debian.pop-sc.rnp.br/debian buster-updates main contrib non-free
+        deb http://debian.pop-sc.rnp.br/debian buster-backports main contrib non-free
+
+        deb http://debian.pop-sc.rnp.br/debian bullseye main contrib non-free
+        deb http://debian.pop-sc.rnp.br/debian bullseye-updates main contrib non-free
+        deb http://debian.pop-sc.rnp.br/debian bullseye-backports main contrib non-free
+
+        # Official Debian repositories
+        deb http://deb.debian.org/debian bullseye main contrib non-free
+        deb http://deb.debian.org/debian bullseye-updates main contrib non-free
+        deb http://deb.debian.org/debian bullseye-backports main contrib non-free
+      dest: /etc/apt/sources.list
+      owner: root
+      group: root
+      mode: 0644
+    when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'bullseye')
+
+  - name: Atualiza PATH no profile - Linux Debian bullseye
+    replace:
+      path: /etc/profile
+      regexp: '/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'
+      replace: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/snap/bin'
+    when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'bullseye')
+
+
+  - name: update apt cache
+    apt: update_cache=yes
+    when: ansible_os_family == 'Debian'
+
+  - name: Upgrade all packages to the latest version
+    apt: name="*" state=latest
+    when: ansible_os_family == 'Debian'
+  
+  - name: Instalar pacotes padroes - Linux
+    apt: 
+      name: "{{ packages }}"
+      state:  latest
+    vars:
+      packages:
+      - aptitude 
+      - vim 
+      - firmware-linux 
+      - vlc 
+      - unrar 
+      - dkms 
+      - ntp 
+      - ssh 
+      - ttf-mscorefonts-installer 
+      - dia 
+      - kolourpaint4 
+      - kdenlive
+      - kdevelop-l10n
+      - nmap
+      - mtr
+      - ntfs-3g
+      - xournal
+      - ipcalc
+      - tcpdump
+      - bash-completion
+      - git
+      - transmission-gtk
+      - pdfshuffler
+      - libnss3-tools
+      - libcurl3-nss
+      - firefox-esr-l10n-pt-br
+      - keepassxc
+      - firmware-realtek
+    when: ansible_os_family == 'Debian'
+  
+  - name: Remove pacotes
+    apt:
+      name: "{{ packages }}"
+      state: absent
+    vars:
+      packages:        
+      - gnome-games
+      - evolution
+      - cheese
+      - gnome-maps
+      - rhythmbox
+      - xterm
+      - totem
+      - gnome-todo
+      - gnome-contacts
+      - gnome-documents
+    when: ansible_os_family == 'Debian'
+
+  - name: Blacklist the pcspkr driver module
+    kernel_blacklist:
+      name: pcspkr
+      state: present
+    when: ansible_os_family == 'Debian'
+
+  - name: Instalar o .deb warsaw - Linux Debian
+    apt:
+      deb: https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.deb
+    when: ansible_distribution == 'Debian'
+
+  - name: Install a .deb Google Chrome - Linux Debian
+    apt:
+      deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    when: ansible_os_family == 'Debian'
+  
+  - name: Install a .deb Dropbox - Linux Debian
+    apt:
+      deb: https://www.dropbox.com/download?dl=packages/ubuntu/dropbox_2019.02.14_amd64.deb
+    when: ansible_os_family == 'Debian'
+
+  - name: Adicionar a chave do repositório do docker no bullseye
+    apt_key:
+      url: https://download.docker.com/linux/debian/gpg
+      state: present
+    when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'bullseye')
+
+  - name: Adicionar repositório do docker no bullseye
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/debian buster stable
+      state: present
+      update_cache: yes
+    when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'bullseye')
+
+  - name: Instalar pacotes necessários do Docker
+    apt:
+      state: latest
+      pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg2
+      - software-properties-common
+    when: (ansible_os_family == 'Debian')
+
+  - name: Instalar o docker no bullseye
+    apt: name={{ packages }} state=latest
+    vars:
+      packages:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'bullseye')
+
+  - name: Remove useless packages from the cache
+    apt: autoclean=yes
+    when: ansible_os_family == 'Debian'
+
+  - name: Remove dependencies that are no longer required
+    apt: autoremove=yes
+    when: ansible_os_family == 'Debian'
