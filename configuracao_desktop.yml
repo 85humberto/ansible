@@ -80,6 +80,8 @@
       - firefox-esr-l10n-pt-br
       - keepassxc
       - firmware-realtek
+      - dnsutils
+      - ldap-utils
     when: ansible_os_family == 'Debian'
   
   - name: Remove pacotes
@@ -99,6 +101,16 @@
       - gnome-contacts
       - gnome-documents
     when: ansible_os_family == 'Debian'
+
+  - name: Instala módulo WL (Wireless)
+    apt:
+      name: "{{ packages }}"
+      state: latest
+    vars:
+      packages:        
+      - linux-headers-{{ ansible_kernel }}
+      - broadcom-sta-dkms
+    when: (ansible_os_family == 'Debian' and ansible_hostname == 'sj-lin-ctic-37247')
 
   - name: Blacklist the pcspkr driver module
     kernel_blacklist:
