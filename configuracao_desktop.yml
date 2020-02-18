@@ -37,6 +37,29 @@
       replace: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/snap/bin'
     when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'bullseye')
 
+  - name: Change /etc/bash.bashrc
+    blockinfile:
+      path: /etc/bash.bashrc
+      backup: yes
+      block: |
+        # enable bash completion in interactive shells
+        if ! shopt -oq posix; then
+          if [ -f /usr/share/bash-completion/bash_completion ]; then
+            . /usr/share/bash-completion/bash_completion
+          elif [ -f /etc/bash_completion ]; then
+            . /etc/bash_completion
+          fi
+        fi
+        
+        export HISTCONTROL=ignoredups:erasedups  # no duplicate entries
+        export HISTSIZE=100000                   # big big history
+        export HISTFILESIZE=100000               # big big history
+        shopt -s histappend                      # append to history, don't overwrite it
+        # Save and reload the history after each command finishes
+        export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+        export HISTTIMEFORMAT="%d/%m/%y %T "
+    when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'bullseye')
+
 
   - name: update apt cache
     apt: update_cache=yes
