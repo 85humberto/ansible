@@ -1,0 +1,120 @@
+- name: run the playbook tasks on the localhost
+  hosts: 127.0.0.1
+  connection: local
+
+  roles:
+    - java8-oracle
+
+  tasks:
+
+  - name: Change /etc/bash.bashrc
+    blockinfile:
+      path: /etc/bash.bashrc
+      backup: yes
+      block: |
+        # enable bash completion in interactive shells
+        if ! shopt -oq posix; then
+          if [ -f /usr/share/bash-completion/bash_completion ]; then
+            . /usr/share/bash-completion/bash_completion
+          elif [ -f /etc/bash_completion ]; then
+            . /etc/bash_completion
+          fi
+        fi
+        
+        export HISTCONTROL=ignoredups:erasedups  # no duplicate entries
+        export HISTSIZE=100000                   # big big history
+        export HISTFILESIZE=100000               # big big history
+        shopt -s histappend                      # append to history, don't overwrite it
+        # Save and reload the history after each command finishes
+        export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+        export HISTTIMEFORMAT="%d/%m/%y %T "
+    when: ansible_os_family == 'Pop!_OS'
+
+
+  - name: update apt cache
+    apt: update_cache=yes
+    when: ansible_os_family == 'Pop!_OS'
+
+  - name: Upgrade all packages to the latest version
+    apt: name="*" state=latest
+    when: ansible_os_family == 'Pop!_OS'
+  
+  - name: Instalar pacotes padroes - Linux
+    apt: 
+      name: "{{ packages }}"
+      state:  latest
+    vars:
+      packages:
+      - vim 
+      - vlc 
+      - unrar
+      - ttf-mscorefonts-installer
+      - nmap
+      - mtr
+      - ipcalc
+      - tcpdump
+      - bash-completion
+      - git
+      - transmission-gtk
+      - pdfshuffler
+      - keepassxc
+      - dnsutils
+      - ldap-utils
+      - android-file-transfer
+      - nautilus-dropbox
+      - os-prober
+      - meld
+      - virtualbox
+      - code
+    when: ansible_os_family == 'Pop!_OS'
+    
+  - name: Instalar o .deb warsaw
+    apt:
+      deb: https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.deb
+    when: ansible_distribution == 'Debian'
+
+  - name: Install a .deb Google Chrome
+    apt:
+      deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    when: ansible_os_family == 'Pop!_OS'
+    
+  - name: Adicionar a chave do repositório do docker
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+    when: ansible_os_family == 'Pop!_OS'
+
+  - name: Adicionar repositório do docker no Ubuntu Focal
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+      state: present
+      update_cache: yes
+    when: ansible_os_family == 'Pop!_OS'
+
+  - name: Instalar pacotes necessários do Docker
+    apt:
+      state: latest
+      pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg2
+      - software-properties-common
+    when: (ansible_os_family == 'Pop!_OS')
+
+  - name: Instalar o docker
+    apt: name={{ packages }} state=latest
+    vars:
+      packages:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    when: ansible_os_family == 'Pop!_OS'
+
+  - name: Remove useless packages from the cache
+    apt: autoclean=yes
+    when: ansible_os_family == 'Pop!_OS'
+
+  - name: Remove dependencies that are no longer required
+    apt: autoremove=yes
+    when: ansible_os_family == 'Pop!_OS'
