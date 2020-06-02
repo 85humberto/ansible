@@ -7,50 +7,50 @@
     owner: root
     group: root
     mode: '0755'
-  when: ansible_os_family == 'Debian'
+  when: (ansible_os_family == 'Debian' or ansible_os_family == 'Pop!_OS')
 
 - name: Baixando e extraindo o java - Linux Debian
   unarchive:
-    src: jre-8u241-linux-x64.tar.gz
+    src: jre-8u251-linux-x64.tar.gz
     dest: /usr/lib/jvm
-    creates: /usr/lib/jvm/jre1.8.0_241    
+    creates: /usr/lib/jvm/jre1.8.0_251    
     owner: root
     group: root
     mode: '0755'
-  when: ansible_os_family == 'Debian'
+  when: (ansible_os_family == 'Debian' or ansible_os_family == 'Pop!_OS')
 
 - name: Fazendo do java a opção padrão
   alternatives:
     link: /usr/bin/java
     name: java
-    path: /usr/lib/jvm/jre1.8.0_241/bin/java
-  when: ansible_os_family == 'Debian'
+    path: /usr/lib/jvm/jre1.8.0_251/bin/java
+  when: (ansible_os_family == 'Debian' or ansible_os_family == 'Pop!_OS')
 
 - name: Fazendo do javaws a opção padrão
   alternatives:
     link: /usr/bin/javaws
     name: javaws
-    path: /usr/lib/jvm/jre1.8.0_241/bin/javaws
-  when: ansible_os_family == 'Debian'
+    path: /usr/lib/jvm/jre1.8.0_251/bin/javaws
+  when: (ansible_os_family == 'Debian' or ansible_os_family == 'Pop!_OS')
 
 - name: Cria atalho do Java ControlPanel na lista de aplicativos
   copy:
     content: |
       [Desktop Entry]
       Name=Java ControlPanel
-      Exec=/usr/lib/jvm/jre1.8.0_241/bin/jcontrol
+      Exec=/usr/lib/jvm/jre1.8.0_251/bin/jcontrol
       GenericName=Java ControlPanel
       Type=Application
       StartupNotify=true
       Categories=Settings;
-      Icon=/usr/lib/jvm/jre1.8.0_241/lib/desktop/icons/hicolor/48x48/apps/sun-java.png
+      Icon=/usr/lib/jvm/jre1.8.0_251/lib/desktop/icons/hicolor/48x48/apps/sun-java.png
       Comment=Oracle Java ControlPanel
       Terminal=false
     dest: /usr/share/applications/jcontrol.desktop
     owner: root
     group: root
-    mode: 0644  
-  when: ansible_os_family == 'Debian'
+    mode: "0644"
+  when: (ansible_os_family == 'Debian' or ansible_os_family == 'Pop!_OS')
 
 - name: Cria atalho do Java Web Start na lista de aplicativos
   copy:
@@ -62,21 +62,26 @@
       Type=Application
       StartupNotify=true
       Categories=Settings;
-      Icon=/usr/lib/jvm/jre1.8.0_241/lib/desktop/icons/hicolor/48x48/apps/sun-java.png
+      Icon=/usr/lib/jvm/jre1.8.0_251/lib/desktop/icons/hicolor/48x48/apps/sun-java.png
       Comment=Oracle Java Web Start
       Terminal=false
       MimeType=application/x-java-jnlp-file;
     dest: /usr/share/applications/javaws.desktop
     owner: root
     group: root
-    mode: 0644  
-  when: ansible_os_family == 'Debian'
+    mode: "0644"
+  when: (ansible_os_family == 'Debian' or ansible_os_family == 'Pop!_OS')
 
 - name: Remove OpenJDK11 e icedtea
   apt:
+    name: "{{ packages }}"
     state: absent
-    pkg:
+  vars:
+    packages:
+    - default-jre
+    - default-jre-headless
+    - openjdk-8-jre-headless
+    - openjdk-8-jre
     - openjdk-11-jre-headless
     - openjdk-11-jre
-    - icedtea-netx
-  when: ansible_os_family == 'Debian'
+  when: (ansible_os_family == 'Debian' or ansible_os_family == 'Pop!_OS')
