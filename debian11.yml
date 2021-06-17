@@ -19,14 +19,7 @@
       owner: root
       group: root
       mode: 0644
-    when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'bullseye')
-
-#  - name: Atualiza PATH no profile - Linux Debian bullseye
-#    replace:
-#      path: /etc/profile
-#      regexp: '/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'
-#      replace: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/snap/bin'
-#    when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'bullseye')
+    when: ansible_os_family == 'Debian'
 
   - name: Change /home/humbertos/.bashrc
     ansible.builtin.copy:
@@ -125,12 +118,16 @@
 
         # Enable kubectl autocompletion
         source <(kubectl completion bash)
+        
+        # Carrega variáveis de ambiente
+        source ~/.env
 
       dest: /home/humbertos/.bashrc
       owner: humbertos
       group: humbertos
       mode: '0644'
       backup: yes
+    when: ansible_os_family == 'Debian'
 
   - name: Cria ssh_config
     ansible.builtin.copy:
@@ -143,6 +140,19 @@
       group: humbertos
       mode: '0644'
       backup: yes
+    when: ansible_os_family == 'Debian'
+
+  - name: Cria .ansible.cfg
+    ansible.builtin.copy:
+      content: |
+        [defaults]
+        interpreter_python=auto_silent
+      dest: /home/humbertos/.ansible.cfg
+      owner: humbertos
+      group: humbertos
+      mode: '0644'
+      backup: yes
+    when: ansible_os_family == 'Debian'
 
   - name: Add the user 'humbertos' with a bash shell, appending the group 'sudo'
     ansible.builtin.user:
@@ -189,6 +199,7 @@
       - remmina-plugin-rdp
       - remmina-plugin-vnc
       - snapd
+      - x2goclient
     when: ansible_os_family == 'Debian'
 
   - name: Remove pacotes
