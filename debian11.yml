@@ -147,6 +147,7 @@
       content: |
         [defaults]
         interpreter_python=auto_silent
+        collections_paths=collections
       dest: /home/humbertos/.ansible.cfg
       owner: humbertos
       group: humbertos
@@ -337,6 +338,37 @@
       groups: docker
       append: yes
     when: ansible_os_family == 'Debian'
+
+# winehq
+  - name: Check if i386 is enabled
+    ansible.builtin.shell: dpkg --print-foreign-architectures | grep i386
+    register: result_i386_check
+    changed_when: result_i386_check.rc == 1
+    failed_when: result_i386_check.rc > 1
+    when: (ansible_os_family == 'Debian')
+
+  - name: Enable i386 architecture
+    ansible.builtin.command: dpkg --add-architecture i386
+    when: (ansible_os_family == 'Debian')
+
+  - name: Download and install the repository key
+    ansible.builtin.apt_key:
+      url: https://dl.winehq.org/wine-builds/winehq.key      
+    when: (ansible_os_family == 'Debian')
+
+  - name: Adiciona repositório
+    ansible.builtin.apt_repository:
+      repo: deb https://dl.winehq.org/wine-builds/debian/ bullseye main 
+      update_cache: yes
+    when: (ansible_os_family == 'Debian')
+
+  - name: Instala winehq e outros pacotes
+    ansible.builtin.apt:
+      state: latest
+      install_recommends: yes
+      pkg:
+      - winehq-stable
+    when: (ansible_os_family == 'Debian')
 
   # atualização automática
   - name: instala unattended-upgrades
