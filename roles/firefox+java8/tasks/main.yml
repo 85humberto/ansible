@@ -1,0 +1,9 @@
+- name: Extrai firefox 52
+  ansible.builtin.unarchive:
+    src: foo.tgz
+    dest: /var/lib/foo
+
+- name: Extrai Java 8
+  ansible.builtin.unarchive:
+    src: foo.tgz
+    dest: /var/lib/foo
