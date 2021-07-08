@@ -2,8 +2,10 @@
   hosts: 127.0.0.1
   connection: local
 
-  tasks:
+  roles:
+    - firefox_java8
 
+  tasks:
   - name: Configura o source.list
     ansible.builtin.copy:
       content: |
@@ -48,7 +50,7 @@
         # check the window size after each command and, if necessary,
         # update the values of LINES and COLUMNS.
         shopt -s checkwinsize
-        
+
         # set variable identifying the chroot you work in (used in the prompt below)
         if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
             debian_chroot=$(cat /etc/debian_chroot)
@@ -99,12 +101,12 @@
             alias fgrep='fgrep --color=auto'
             alias egrep='egrep --color=auto'
         fi
-        
+
         # some more ls aliases
         alias ll='ls -l'
         alias la='ls -A'
         alias l='ls -CF'
- 
+
         # enable programmable completion features (you don't need to enable
         # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
         # sources /etc/bash.bashrc).
@@ -118,7 +120,7 @@
 
         # Enable kubectl autocompletion
         source <(kubectl completion bash)
-        
+
         # Carrega variáveis de ambiente
         source ~/.env
 
@@ -166,9 +168,9 @@
     ansible.builtin.apt:
       update_cache: yes
       pkg:
-      - vlc 
-      - unrar 
-      - ttf-mscorefonts-installer 
+      - vlc
+      - unrar
+      - ttf-mscorefonts-installer
       - nmap
       - mtr
       - xournal
@@ -201,10 +203,11 @@
       - remmina-plugin-vnc
       - snapd
       - x2goclient
+      - ansible-lint
     when: ansible_os_family == 'Debian'
 
   - name: Remove pacotes
-    ansible.builtin.apt: 
+    ansible.builtin.apt:
       state: absent
       autoremove: yes
       pkg:
@@ -217,7 +220,7 @@
       - gnome-todo
       - gnome-contacts
       - gnome-documents
-    when: (ansible_os_family == 'Debian')    
+    when: (ansible_os_family == 'Debian')
 
   # VSCode
   - name: Adicionar a chave do repositório do vscode - Linux
@@ -257,14 +260,14 @@
       name: flathub
       state: present
       flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
-    when: (ansible_os_family == 'Debian')  
-      
+    when: (ansible_os_family == 'Debian')
+
   - name: Install the Discord package from flathub
     community.general.flatpak:
       name: com.discordapp.Discord
       state: present
-    when: (ansible_os_family == 'Debian')      
-  
+    when: (ansible_os_family == 'Debian')
+
   - name: Install the telegram package from flathub
     community.general.flatpak:
       name: org.telegram.desktop
@@ -280,7 +283,7 @@
     ansible.builtin.apt:
       deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
     when: ansible_os_family == 'Debian'
-  
+
   # kubectl
   - name: Adicionar a chave do Google Cloud public signing key
     ansible.builtin.apt_key:
@@ -290,7 +293,7 @@
 
   - name: Adicionar repositório Kubernetes apt repository
     ansible.builtin.apt_repository:
-      repo: deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main      
+      repo: deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
       update_cache: yes
     when: (ansible_os_family == 'Debian')
 
@@ -301,7 +304,7 @@
       - apt-transport-https
       - ca-certificates
       - curl
-      - kubectl      
+      - kubectl
     when: (ansible_os_family == 'Debian')
 
   # Docker
@@ -353,12 +356,12 @@
 
   - name: Download and install the repository key
     ansible.builtin.apt_key:
-      url: https://dl.winehq.org/wine-builds/winehq.key      
+      url: https://dl.winehq.org/wine-builds/winehq.key
     when: (ansible_os_family == 'Debian')
 
   - name: Adiciona repositório
     ansible.builtin.apt_repository:
-      repo: deb https://dl.winehq.org/wine-builds/debian/ bullseye main 
+      repo: deb https://dl.winehq.org/wine-builds/debian/ bullseye main
       update_cache: yes
     when: (ansible_os_family == 'Debian')
 
@@ -381,7 +384,7 @@
     copy:
         content: |
           Unattended-Upgrade::Origins-Pattern {
-            "o=*";          
+            "o=*";
           };
           Unattended-Upgrade::Remove-Unused-Dependencies "true";
         dest: /etc/apt/apt.conf.d/50unattended-upgrades
