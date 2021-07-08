@@ -1,0 +1,80 @@
+- name: Extrai firefox 52
+  ansible.builtin.unarchive:
+    src: firefox-52.9.0esr.tar.bz2
+    dest: /opt
+    owner: root
+    group: root
+    mode: '0755'
+  when: (ansible_os_family == 'Debian')
+
+- name: Cria atalho do "Firefox ESR 52.9" na lista de aplicativos
+  copy:
+    content: |
+      [Desktop Entry]
+      Name=Firefox ESR 52.9
+      Exec=/opt/firefox/firefox -p default %u
+      GenericName=Web Browser
+      Type=Application
+      StartupNotify=true
+      Categories=WebBrowser;
+      Icon=/opt/firefox/browser/icons/mozicon128.png
+      Terminal=false
+    dest: /usr/share/applications/firefox-esr-52.9.desktop
+    owner: root
+    group: root
+    mode: 0644
+  when: (ansible_os_family == 'Debian')
+
+- name: Cria diretório /usr/lib/jvm
+  file:
+    path: /usr/lib/jvm
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: (ansible_os_family == 'Debian')
+
+- name: Baixando e extraindo o java - Linux Debian
+  unarchive:
+    src: jre-8u241-linux-x64.tar.gz
+    dest: /usr/lib/jvm
+    creates: /usr/lib/jvm/jre1.8.0_241
+    owner: root
+    group: root
+    mode: '0755'
+  when: (ansible_os_family == 'Debian')
+
+- name: Cria atalho do Java ControlPanel na lista de aplicativos
+  copy:
+    content: |
+      [Desktop Entry]
+      Name=Java ControlPanel
+      Exec=/usr/lib/jvm/jre1.8.0_241/bin/jcontrol
+      GenericName=Java ControlPanel
+      Type=Application
+      StartupNotify=true
+      Categories=Settings;
+      Icon=/usr/lib/jvm/jre1.8.0_241/lib/desktop/icons/hicolor/48x48/apps/sun-java.png
+      Comment=Oracle Java ControlPanel
+      Terminal=false
+    dest: /usr/share/applications/jcontrol.desktop
+    owner: root
+    group: root
+    mode: 0644
+  when: (ansible_os_family == 'Debian')
+
+- name: Cria diretório /home/humbertos/.mozilla/plugins
+  file:
+    path: /home/humbertos/.mozilla/plugins
+    state: directory
+    owner: humbertos
+    group: humbertos
+    mode: '0755'
+  when: (ansible_os_family == 'Debian')
+
+- name: Cria link para ativar o java no Firefox
+  ansible.builtin.file:
+    src: /usr/lib/jvm/jre1.8.0_241/lib/amd64/libnpjp2.so
+    dest: /home/humbertos/.mozilla/plugins/libnpjp2.so
+    state: link
+  when: (ansible_os_family == 'Debian')
