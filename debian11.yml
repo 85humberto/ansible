@@ -204,6 +204,7 @@
       - snapd
       - x2goclient
       - ansible-lint
+      - snmp
     when: ansible_os_family == 'Debian'
 
   - name: Instala módulo WL (Wireless)
