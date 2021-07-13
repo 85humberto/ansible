@@ -206,6 +206,27 @@
       - ansible-lint
     when: ansible_os_family == 'Debian'
 
+  - name: Instala módulo WL (Wireless)
+    ansible.builtin.apt:
+      pkg:
+      - linux-headers-{{ ansible_kernel }}
+      - broadcom-sta-dkms
+    when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
+
+  - name: Instalar o Bluetooth Firmware
+    ansible.builtin.apt:
+      deb: https://github.com/winterheart/broadcom-bt-firmware/releases/download/v12.0.1.1105_p3/broadcom-bt-firmware-10.1.0.1115.deb
+    when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
+
+  - name: disable bluetooth on boot
+    lineinfile:
+      path: /etc/bluetooth/main.conf
+      regexp: '^AutoEnable=true'
+      backrefs: yes
+      backup: yes    
+      line: AutoEnable=false
+    when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
+
   - name: Remove pacotes
     ansible.builtin.apt:
       state: absent
@@ -375,49 +396,56 @@
 
   #Anydesk
   - name: Adicionar a chave do repositório do AnyDesk
-    apt_key:
+    ansible.builtin.apt_key:
       url: https://keys.anydesk.com/repos/DEB-GPG-KEY
       state: present
     when: ansible_os_family == 'Debian'
 
   - name: Adicionar repositório AnyDesk
-    apt_repository:
+    ansible.builtin.apt_repository:
       repo: deb http://deb.anydesk.com/ all main
     when: ansible_os_family == 'Debian'
 
   - name: Instala AnyDesk
-    apt:
+    ansible.builtin.apt:
       pkg:
       - anydesk
     when: ansible_os_family == 'Debian'
 
+  - name: Stop and disable service anydesk on debian, if running
+    ansible.builtin.systemd:
+      name: anydesk
+      state: stopped
+      enabled: no
+    when: ansible_os_family == 'Debian'
+
   #TeamViewer
   - name: Adicionar a chave do repositório do TeamViewer
-    apt_key:
+    ansible.builtin.apt_key:
       url: https://download.teamviewer.com/download/linux/signature/TeamViewer2017.asc
       state: present
     when: ansible_os_family == 'Debian'
 
   - name: Adicionar repositório TeamViewer
-    apt_repository:
+    ansible.builtin.apt_repository:
       repo: deb https://linux.teamviewer.com/deb stable main
     when: ansible_os_family == 'Debian'
 
   - name: Instala TeamViewer
-    apt:
+    ansible.builtin.apt:
       pkg:
       - teamviewer
     when: ansible_os_family == 'Debian'
 
   # atualização automática
   - name: instala unattended-upgrades
-    apt:
+    ansible.builtin.apt:
       pkg:
       - unattended-upgrades
     when: ansible_os_family == 'Debian'
 
   - name: Define arquivo /etc/apt/apt.conf.d/50unattended-upgrades
-    copy:
+    ansible.builtin.copy:
         content: |
           Unattended-Upgrade::Origins-Pattern {
             "o=*";
@@ -430,7 +458,7 @@
     when: ansible_os_family == 'Debian'
 
   - name: Define arquivo /etc/apt/apt.conf.d/20auto-upgrades
-    copy:
+    ansible.builtin.copy:
         content: |
           APT::Periodic::Update-Package-Lists "1";
           APT::Periodic::Unattended-Upgrade "1";
@@ -441,7 +469,7 @@
     when: ansible_os_family == 'Debian'
 
   - name: Define download das atualizações - /lib/systemd/system/apt-daily.timer
-    copy:
+    ansible.builtin.copy:
         content: |
           [Unit]
           Description=Daily apt download activities
@@ -460,7 +488,7 @@
     when: ansible_os_family == 'Debian'
 
   - name: Define instalação das atualizações - /lib/systemd/system/apt-daily-upgrade.timer
-    copy:
+    ansible.builtin.copy:
         content: |
           [Unit]
           Description=Daily apt upgrade and clean activities
@@ -480,6 +508,6 @@
     when: ansible_os_family == 'Debian'
 
   - name: just force systemd to reread configs
-    systemd:
+    ansible.builtin.systemd:
       daemon_reload: yes
     when: ansible_os_family == 'Debian'
