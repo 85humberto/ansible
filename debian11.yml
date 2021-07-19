@@ -164,6 +164,17 @@
       append: yes
     when: ansible_os_family == 'Debian'
 
+  - name: No password prompt for sudo user
+    ansible.builtin.copy:
+      content: |
+        %sudo ALL=(ALL) NOPASSWD: ALL
+      dest: /etc/sudoers.d/nopasswd
+      owner: root
+      group: root
+      mode: '0440'
+      backup: yes
+    when: ansible_os_family == 'Debian'
+
   - name: Instalar pacotes padroes - Linux
     ansible.builtin.apt:
       update_cache: yes
