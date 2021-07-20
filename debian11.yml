@@ -175,6 +175,30 @@
       backup: yes
     when: ansible_os_family == 'Debian'
 
+  - name: script to disable IPv6
+    ansible.builtin.copy:
+      content: |
+        #!/bin/bash
+        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+      dest: /usr/local/bin/disable_ipv6
+      owner: root
+      group: root
+      mode: '0755'
+    when: ansible_os_family == 'Debian'
+
+  - name: script to enable IPv6
+    ansible.builtin.copy:
+      content: |
+        #!/bin/bash
+        echo 0 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+        echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+      dest: /usr/local/bin/enable_ipv6
+      owner: root
+      group: root
+      mode: '0755'
+    when: ansible_os_family == 'Debian'
+
   - name: Instalar pacotes padroes - Linux
     ansible.builtin.apt:
       update_cache: yes
@@ -203,6 +227,8 @@
       - nautilus-image-converter
       - network-manager-openvpn
       - network-manager-openvpn-gnome
+      - network-manager-pptp
+      - network-manager-pptp-gnome
       - system-config-printer
       - cups
       - printer-driver-cups-pdf
