@@ -17,6 +17,7 @@
         deb http://deb.debian.org/debian bullseye main contrib non-free
         deb http://deb.debian.org/debian bullseye-updates main contrib non-free
         deb http://deb.debian.org/debian bullseye-backports main contrib non-free
+        deb http://security.debian.org/debian-security bullseye-security main
       dest: /etc/apt/sources.list
       owner: root
       group: root
@@ -242,7 +243,7 @@
       - x2goclient
       - ansible-lint
       - snmp
-      - cifs-utils
+      - rsync
     when: ansible_os_family == 'Debian'
 
   - name: Instala módulo WL (Wireless)
@@ -262,7 +263,7 @@
       path: /etc/bluetooth/main.conf
       regexp: '^AutoEnable=true'
       backrefs: yes
-      backup: yes    
+      backup: yes
       line: AutoEnable=false
     when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
 
