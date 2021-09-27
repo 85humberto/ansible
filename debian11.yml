@@ -4,6 +4,7 @@
 
   roles:
     - firefox_java8
+    - flashplayer
 
   tasks:
   - name: Configura o source.list

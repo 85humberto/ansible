@@ -8,7 +8,7 @@
   when: (ansible_os_family == 'Debian')
 
 - name: Cria atalho do "Firefox ESR 52.9" na lista de aplicativos
-  copy:
+  ansible.builtin.copy:
     content: |
       [Desktop Entry]
       Name=Firefox ESR 52.9
@@ -26,7 +26,7 @@
   when: (ansible_os_family == 'Debian')
 
 - name: Cria diretório /usr/lib/jvm
-  file:
+  ansible.builtin.file:
     path: /usr/lib/jvm
     state: directory
     owner: root
@@ -35,7 +35,7 @@
   when: (ansible_os_family == 'Debian')
 
 - name: Baixando e extraindo o java - Linux Debian
-  unarchive:
+  ansible.builtin.unarchive:
     src: jre-8u241-linux-x64.tar.gz
     dest: /usr/lib/jvm
     creates: /usr/lib/jvm/jre1.8.0_241
@@ -45,7 +45,7 @@
   when: (ansible_os_family == 'Debian')
 
 - name: Cria atalho do Java ControlPanel na lista de aplicativos
-  copy:
+  ansible.builtin.copy:
     content: |
       [Desktop Entry]
       Name=Java ControlPanel
@@ -64,7 +64,7 @@
   when: (ansible_os_family == 'Debian')
 
 - name: Cria diretório /home/humbertos/.mozilla/plugins
-  file:
+  ansible.builtin.file:
     path: /home/humbertos/.mozilla/plugins
     state: directory
     owner: humbertos
