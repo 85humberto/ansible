@@ -245,6 +245,8 @@
       - ansible-lint
       - snmp
       - rsync
+      - command-not-found
+      - tcpdump
     when: ansible_os_family == 'Debian'
 
   - name: Instala módulo WL (Wireless)
