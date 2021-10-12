@@ -331,12 +331,21 @@
       name: com.discordapp.Discord
       state: present
     when: (ansible_os_family == 'Debian')
+    tags: flatpak
 
   - name: Install the telegram package from flathub
     community.general.flatpak:
       name: org.telegram.desktop
       state: present
     when: (ansible_os_family == 'Debian')
+    tags: flatpak
+
+  - name: Install the bitwarden package from flathub
+    community.general.flatpak:
+      name: com.bitwarden
+      state: present
+    when: (ansible_os_family == 'Debian')
+    tags: flatpak
 
   - name: Instalar o .deb warsaw - Linux Debian
     ansible.builtin.apt:
