@@ -139,12 +139,14 @@
         Host *
           User root
           StrictHostKeyChecking no
+          IdentityFile ~/.ssh/id_ed25519
       dest: /home/humbertos/.ssh/config
       owner: humbertos
       group: humbertos
       mode: '0644'
       backup: yes
     when: ansible_os_family == 'Debian'
+    tags: ssh
 
   - name: Cria .ansible.cfg
     ansible.builtin.copy:
