@@ -316,10 +316,10 @@
     when: ansible_os_family == 'Debian'
   # VSCode
 
-  - name: Install Authy with snap with beta channel
+  - name: Install Authy with snap
     snap:
       name: authy
-      channel: beta
+    tags: snap
 
   - name: Add the flathub flatpak repository remote to the user installation
     community.general.flatpak_remote:
