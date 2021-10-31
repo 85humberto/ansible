@@ -319,6 +319,7 @@
   - name: Install Authy with snap
     snap:
       name: authy
+    when: (ansible_os_family == 'Debian')
     tags: snap
 
   - name: Add the flathub flatpak repository remote to the user installation
@@ -345,6 +346,13 @@
   - name: Install the bitwarden package from flathub
     community.general.flatpak:
       name: com.bitwarden
+      state: present
+    when: (ansible_os_family == 'Debian')
+    tags: flatpak
+
+  - name: Install the pomodoro package from flathub
+    community.general.flatpak:
+      name: org.gnome.Solanum
       state: present
     when: (ansible_os_family == 'Debian')
     tags: flatpak
