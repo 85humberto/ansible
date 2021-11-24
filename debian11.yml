@@ -454,6 +454,7 @@
       install_recommends: yes
       pkg:
       - winehq-stable
+      - q4wine
     when: (ansible_os_family == 'Debian')
 
   #Anydesk
