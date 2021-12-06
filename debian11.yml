@@ -357,6 +357,13 @@
     when: (ansible_os_family == 'Debian')
     tags: flatpak
 
+  - name: Install the Firefox package from flathub
+    community.general.flatpak:
+      name: org.mozilla.firefox
+      state: present
+    when: (ansible_os_family == 'Debian')
+    tags: flatpak
+
   - name: Instalar o .deb warsaw - Linux Debian
     ansible.builtin.apt:
       deb: https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.deb
