@@ -249,6 +249,12 @@
       - rsync
       - command-not-found
       - tcpdump
+      - telnet
+      - nautilus-share
+      - nautilus-filename-repairer
+      - nautilus-wipe
+      - nautilus-font-manager
+      - nautilus-gtkhash
     when: ansible_os_family == 'Debian'
 
   - name: Instala módulo WL (Wireless)
