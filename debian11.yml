@@ -1,4 +1,4 @@
-- name: run the playbook tasks on the localhost
+- name: Run the playbook tasks on the localhost
   hosts: 127.0.0.1
   connection: local
 
@@ -7,521 +7,486 @@
     - flashplayer
 
   tasks:
-  - name: Configura o source.list
-    ansible.builtin.copy:
-      content: |
-        deb http://debian.pop-sc.rnp.br/debian bullseye main contrib non-free
-        deb http://debian.pop-sc.rnp.br/debian bullseye-updates main contrib non-free
-        deb http://debian.pop-sc.rnp.br/debian bullseye-backports main contrib non-free
+    - name: Configura o source.list
+      ansible.builtin.copy:
+        content: |
+          deb http://debian.pop-sc.rnp.br/debian bullseye main contrib non-free
+          deb http://debian.pop-sc.rnp.br/debian bullseye-updates main contrib non-free
+          deb http://debian.pop-sc.rnp.br/debian bullseye-backports main contrib non-free
 
-        # Official Debian repositories
-        deb http://deb.debian.org/debian bullseye main contrib non-free
-        deb http://deb.debian.org/debian bullseye-updates main contrib non-free
-        deb http://deb.debian.org/debian bullseye-backports main contrib non-free
-        deb http://security.debian.org/debian-security bullseye-security main contrib non-free
-      dest: /etc/apt/sources.list
-      owner: root
-      group: root
-      mode: 0644
-    when: ansible_os_family == 'Debian'
+          # Official Debian repositories
+          deb http://deb.debian.org/debian bullseye main contrib non-free
+          deb http://deb.debian.org/debian bullseye-updates main contrib non-free
+          deb http://deb.debian.org/debian bullseye-backports main contrib non-free
+          deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+        dest: /etc/apt/sources.list
+        owner: root
+        group: root
+        mode: 0644
+      when: ansible_os_family == 'Debian'
 
-  - name: Change /home/humbertos/.bashrc
-    ansible.builtin.copy:
-      content: |
-        # If not running interactively, don't do anything
-        case $- in
-            *i*) ;;
-              *) return;;
-        esac
+    - name: Change /home/humbertos/.bashrc
+      ansible.builtin.copy:
+        content: |
+          # If not running interactively, don't do anything
+          case $- in
+              *i*) ;;
+                *) return;;
+          esac
 
-        # don't put duplicate lines or lines starting with space in the history.
-        # See bash(1) for more options
-        HISTCONTROL=ignoreboth
+          # don't put duplicate lines or lines starting with space in the history.
+          # See bash(1) for more options
+          HISTCONTROL=ignoreboth
 
-        # append to the history file, don't overwrite it
-        shopt -s histappend
+          # append to the history file, don't overwrite it
+          shopt -s histappend
 
-        # Save and reload the history after each command finishes
-        export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
-        export HISTTIMEFORMAT="%d/%m/%y %T "
+          # Save and reload the history after each command finishes
+          export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+          export HISTTIMEFORMAT="%d/%m/%y %T "
 
-        # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-        HISTSIZE=100000
-        HISTFILESIZE=200000
+          # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+          HISTSIZE=100000
+          HISTFILESIZE=200000
 
-        # check the window size after each command and, if necessary,
-        # update the values of LINES and COLUMNS.
-        shopt -s checkwinsize
+          # check the window size after each command and, if necessary,
+          # update the values of LINES and COLUMNS.
+          shopt -s checkwinsize
 
-        # set variable identifying the chroot you work in (used in the prompt below)
-        if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-            debian_chroot=$(cat /etc/debian_chroot)
-        fi
-
-        # set a fancy prompt (non-color, unless we know we "want" color)
-        case "$TERM" in
-            xterm-color|*-256color) color_prompt=yes;;
-        esac
-
-        # uncomment for a colored prompt, if the terminal has the capability; turned
-        # off by default to not distract the user: the focus in a terminal window
-        # should be on the output of commands, not on the prompt
-        force_color_prompt=yes
-
-        if [ -n "$force_color_prompt" ]; then
-            if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-          # We have color support; assume it's compliant with Ecma-48
-          # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-          # a case would tend to support setf rather than setaf.)
-          color_prompt=yes
-            else
-          color_prompt=
-            fi
-        fi
-
-        if [ "$color_prompt" = yes ]; then
-            PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-        else
-            PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-        fi
-        unset color_prompt force_color_prompt
-
-        # If this is an xterm set the title to user@host:dir
-        case "$TERM" in
-        xterm*|rxvt*)
-            PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-            ;;
-        *)
-            ;;
-        esac
-
-        # enable color support of ls and also add handy aliases
-        if [ -x /usr/bin/dircolors ]; then
-            test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-            alias ls='ls --color=auto'
-            alias grep='grep --color=auto'
-            alias fgrep='fgrep --color=auto'
-            alias egrep='egrep --color=auto'
-        fi
-
-        # some more ls aliases
-        alias ll='ls -l'
-        alias la='ls -A'
-        alias l='ls -CF'
-
-        # enable programmable completion features (you don't need to enable
-        # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
-        # sources /etc/bash.bashrc).
-        if ! shopt -oq posix; then
-          if [ -f /usr/share/bash-completion/bash_completion ]; then
-            . /usr/share/bash-completion/bash_completion
-          elif [ -f /etc/bash_completion ]; then
-            . /etc/bash_completion
+          # set variable identifying the chroot you work in (used in the prompt below)
+          if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+              debian_chroot=$(cat /etc/debian_chroot)
           fi
-        fi
 
-        # Enable kubectl autocompletion
-        source <(kubectl completion bash)
+          # set a fancy prompt (non-color, unless we know we "want" color)
+          case "$TERM" in
+              xterm-color|*-256color) color_prompt=yes;;
+          esac
 
-        # Carrega variáveis de ambiente
-        source ~/.env
+          # uncomment for a colored prompt, if the terminal has the capability; turned
+          # off by default to not distract the user: the focus in a terminal window
+          # should be on the output of commands, not on the prompt
+          force_color_prompt=yes
 
-      dest: /home/humbertos/.bashrc
-      owner: humbertos
-      group: humbertos
-      mode: '0644'
-      backup: yes
-    when: ansible_os_family == 'Debian'
+          if [ -n "$force_color_prompt" ]; then
+              if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+            # We have color support; assume it's compliant with Ecma-48
+            # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+            # a case would tend to support setf rather than setaf.)
+            color_prompt=yes
+              else
+            color_prompt=
+              fi
+          fi
 
-  - name: Cria ssh_config
-    ansible.builtin.copy:
-      content: |
-        Host *
-          User root
-          StrictHostKeyChecking no
-          IdentityFile ~/.ssh/id_ed25519
-      dest: /home/humbertos/.ssh/config
-      owner: humbertos
-      group: humbertos
-      mode: '0644'
-      backup: yes
-    when: ansible_os_family == 'Debian'
-    tags: ssh
+          if [ "$color_prompt" = yes ]; then
+              PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+          else
+              PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+          fi
+          unset color_prompt force_color_prompt
 
-  - name: Cria .ansible.cfg
-    ansible.builtin.copy:
-      content: |
-        [defaults]
-        interpreter_python=auto_silent
-        collections_paths=collections
-      dest: /home/humbertos/.ansible.cfg
-      owner: humbertos
-      group: humbertos
-      mode: '0644'
-      backup: yes
-    when: ansible_os_family == 'Debian'
+          # If this is an xterm set the title to user@host:dir
+          case "$TERM" in
+          xterm*|rxvt*)
+              PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+              ;;
+          *)
+              ;;
+          esac
 
-  - name: Add the user 'humbertos' with a bash shell, appending the group 'sudo'
-    ansible.builtin.user:
-      name: humbertos
-      groups: sudo
-      append: yes
-    when: ansible_os_family == 'Debian'
+          # enable color support of ls and also add handy aliases
+          if [ -x /usr/bin/dircolors ]; then
+              test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+              alias ls='ls --color=auto'
+              alias grep='grep --color=auto'
+              alias fgrep='fgrep --color=auto'
+              alias egrep='egrep --color=auto'
+          fi
 
-  - name: No password prompt for sudo user
-    ansible.builtin.copy:
-      content: |
-        %sudo ALL=(ALL) NOPASSWD: ALL
-      dest: /etc/sudoers.d/nopasswd
-      owner: root
-      group: root
-      mode: '0440'
-      backup: yes
-    when: ansible_os_family == 'Debian'
+          # some more ls aliases
+          alias ll='ls -l'
+          alias la='ls -A'
+          alias l='ls -CF'
 
-  - name: script to disable IPv6
-    ansible.builtin.copy:
-      content: |
-        #!/bin/bash
-        echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
-        echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
-      dest: /usr/local/bin/disable_ipv6
-      owner: root
-      group: root
-      mode: '0755'
-    when: ansible_os_family == 'Debian'
+          # enable programmable completion features (you don't need to enable
+          # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+          # sources /etc/bash.bashrc).
+          if ! shopt -oq posix; then
+            if [ -f /usr/share/bash-completion/bash_completion ]; then
+              . /usr/share/bash-completion/bash_completion
+            elif [ -f /etc/bash_completion ]; then
+              . /etc/bash_completion
+            fi
+          fi
 
-  - name: script to enable IPv6
-    ansible.builtin.copy:
-      content: |
-        #!/bin/bash
-        echo 0 > /proc/sys/net/ipv6/conf/default/disable_ipv6
-        echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6
-      dest: /usr/local/bin/enable_ipv6
-      owner: root
-      group: root
-      mode: '0755'
-    when: ansible_os_family == 'Debian'
+          # Enable kubectl autocompletion
+          source <(kubectl completion bash)
 
-  - name: Instalar pacotes padroes - Linux
-    ansible.builtin.apt:
-      update_cache: yes
-      pkg:
-      - vlc
-      - unrar
-      - ttf-mscorefonts-installer
-      - nmap
-      - mtr
-      - xournal
-      - ipcalc
-      - bash-completion
-      - git
-      - transmission-gtk
-      - pdfshuffler
-      - keepassxc
-      - dnsutils
-      - ldap-utils
-      - terminator
-      - flatpak
-      - gnome-software-plugin-flatpak
-      - gnome-tweaks
-      - nautilus-dropbox
-      - nautilus-admin
-      - nautilus-scripts-manager
-      - nautilus-image-converter
-      - network-manager-openvpn
-      - network-manager-openvpn-gnome
-      - network-manager-pptp
-      - network-manager-pptp-gnome
-      - system-config-printer
-      - cups
-      - printer-driver-cups-pdf
-      - firmware-realtek
-      - firmware-misc-nonfree
-      - make
-      - remmina
-      - remmina-plugin-rdp
-      - remmina-plugin-vnc
-      - snapd
-      - x2goclient
-      - ansible-lint
-      - snmp
-      - rsync
-      - command-not-found
-      - tcpdump
-      - telnet
-      - nautilus-share
-      - nautilus-filename-repairer
-      - nautilus-wipe
-      - nautilus-font-manager
-      - nautilus-gtkhash
-    when: ansible_os_family == 'Debian'
+          # Carrega variáveis de ambiente
+          source ~/.env
 
-  - name: Instala módulo WL (Wireless)
-    ansible.builtin.apt:
-      pkg:
-      - linux-headers-{{ ansible_kernel }}
-      - broadcom-sta-dkms
-    when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
+        dest: /home/humbertos/.bashrc
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
 
-  - name: Instalar o Bluetooth Firmware
-    ansible.builtin.apt:
-      deb: https://github.com/winterheart/broadcom-bt-firmware/releases/download/v12.0.1.1105_p3/broadcom-bt-firmware-10.1.0.1115.deb
-    when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
+    - name: Cria ssh_config
+      ansible.builtin.copy:
+        content: |
+          Host *
+            User root
+            StrictHostKeyChecking no
+            IdentityFile ~/.ssh/id_ed25519
+        dest: /home/humbertos/.ssh/config
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
+      tags: ssh
 
-  - name: disable bluetooth on boot
-    lineinfile:
-      path: /etc/bluetooth/main.conf
-      regexp: '^AutoEnable=true'
-      backrefs: yes
-      backup: yes
-      line: AutoEnable=false
-    when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
+    - name: Cria .ansible.cfg
+      ansible.builtin.copy:
+        content: |
+          [defaults]
+          interpreter_python=auto_silent
+          collections_paths=collections
+        dest: /home/humbertos/.ansible.cfg
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
 
-  - name: Remove pacotes
-    ansible.builtin.apt:
-      state: absent
-      autoremove: yes
-      pkg:
-      - gnome-games
-      - evolution
-      - gnome-maps
-      - rhythmbox
-      - xterm
-      - totem
-      - gnome-todo
-      - gnome-contacts
-      - gnome-documents
-    when: (ansible_os_family == 'Debian')
+    - name: Add the user 'humbertos' with a bash shell, appending the group 'sudo'
+      ansible.builtin.user:
+        name: humbertos
+        groups: sudo
+        append: true
+      when: ansible_os_family == 'Debian'
 
-  # VSCode
-  - name: Adicionar a chave do repositório do vscode - Linux
-    ansible.builtin.apt_key:
-      url: https://packages.microsoft.com/keys/microsoft.asc
-      state: present
-    when: ansible_os_family == 'Debian'
+    - name: No password prompt for sudo user
+      ansible.builtin.copy:
+        content: |
+          %sudo ALL=(ALL) NOPASSWD: ALL
+        dest: /etc/sudoers.d/nopasswd
+        owner: root
+        group: root
+        mode: '0440'
+        backup: true
+      when: ansible_os_family == 'Debian'
 
-  - name: Adicionar repositório do vscode - Linux
-    ansible.builtin.apt_repository:
-      filename: vscode
-      repo: deb [arch=amd64] http://packages.microsoft.com/repos/vscode stable main
-      state: present
-      update_cache: yes
-    when: ansible_os_family == 'Debian'
+    - name: Script to disable IPv6
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+          echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        dest: /usr/local/bin/disable_ipv6
+        owner: root
+        group: root
+        mode: '0755'
+      when: ansible_os_family == 'Debian'
 
-  - name: Instalar o vscode - Linux
-    ansible.builtin.apt:
-      name: code
-      state: latest
-    when: ansible_os_family == 'Debian'
+    - name: Script to enable IPv6
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          echo 0 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+          echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        dest: /usr/local/bin/enable_ipv6
+        owner: root
+        group: root
+        mode: '0755'
+      when: ansible_os_family == 'Debian'
 
-  - name: Remove source list duplicado do code
-    ansible.builtin.file:
-      path: /etc/apt/sources.list.d/packages_microsoft_com_repos_vscode.list
-      state: absent
-    when: ansible_os_family == 'Debian'
-  # VSCode
+    - name: Instalar pacotes padroes - Linux
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - vlc
+          - unrar
+          - ttf-mscorefonts-installer
+          - nmap
+          - mtr
+          - xournal
+          - ipcalc
+          - bash-completion
+          - git
+          - transmission-gtk
+          - pdfshuffler
+          - keepassxc
+          - dnsutils
+          - ldap-utils
+          - terminator
+          - flatpak
+          - gnome-software-plugin-flatpak
+          - gnome-tweaks
+          - nautilus-dropbox
+          - nautilus-admin
+          - nautilus-scripts-manager
+          - nautilus-image-converter
+          - network-manager-openvpn
+          - network-manager-openvpn-gnome
+          - network-manager-pptp
+          - network-manager-pptp-gnome
+          - system-config-printer
+          - cups
+          - printer-driver-cups-pdf
+          - firmware-realtek
+          - firmware-misc-nonfree
+          - make
+          - remmina
+          - remmina-plugin-rdp
+          - remmina-plugin-vnc
+          - snapd
+          - x2goclient
+          - ansible-lint
+          - snmp
+          - rsync
+          - command-not-found
+          - tcpdump
+          - telnet
+          - nautilus-share
+          - nautilus-filename-repairer
+          - nautilus-wipe
+          - nautilus-font-manager
+          - nautilus-gtkhash
+      when: ansible_os_family == 'Debian'
 
-  - name: Install Authy with snap
-    snap:
-      name: authy
-    when: (ansible_os_family == 'Debian')
-    tags: snap
+    - name: Instala módulo WL (Wireless)
+      ansible.builtin.apt:
+        pkg:
+          - linux-headers-{{ ansible_kernel }}
+          - broadcom-sta-dkms
+      when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
 
-  - name: Add the flathub flatpak repository remote to the user installation
-    community.general.flatpak_remote:
-      name: flathub
-      state: present
-      flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
-    when: (ansible_os_family == 'Debian')
+    - name: Instalar o Bluetooth Firmware
+      ansible.builtin.apt:
+        deb: https://github.com/winterheart/broadcom-bt-firmware/releases/download/v12.0.1.1105_p3/broadcom-bt-firmware-10.1.0.1115.deb
+      when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
 
-  - name: Install the Discord package from flathub
-    community.general.flatpak:
-      name: com.discordapp.Discord
-      state: present
-    when: (ansible_os_family == 'Debian')
-    tags: flatpak
+    - name: Disable bluetooth on boot
+      ansible.builtin.lineinfile:
+        path: /etc/bluetooth/main.conf
+        regexp: '^AutoEnable=true'
+        backrefs: true
+        backup: true
+        line: AutoEnable=false
+      when: ansible_os_family == 'Debian' and ansible_hostname == 'lenovo'
 
-  - name: Install the telegram package from flathub
-    community.general.flatpak:
-      name: org.telegram.desktop
-      state: present
-    when: (ansible_os_family == 'Debian')
-    tags: flatpak
+    - name: Remove pacotes
+      ansible.builtin.apt:
+        state: absent
+        autoremove: true
+        pkg:
+          - gnome-games
+          - evolution
+          - gnome-maps
+          - rhythmbox
+          - xterm
+          - totem
+          - gnome-todo
+          - gnome-contacts
+          - gnome-documents
+      when: (ansible_os_family == 'Debian')
 
-  - name: Install the bitwarden package from flathub
-    community.general.flatpak:
-      name: com.bitwarden
-      state: present
-    when: (ansible_os_family == 'Debian')
-    tags: flatpak
+    # VSCode
+    - name: Adicionar a chave do repositório do vscode - Linux
+      ansible.builtin.apt_key:
+        url: https://packages.microsoft.com/keys/microsoft.asc
+        state: present
+      when: ansible_os_family == 'Debian'
 
-  - name: Install the pomodoro package from flathub
-    community.general.flatpak:
-      name: org.gnome.Solanum
-      state: present
-    when: (ansible_os_family == 'Debian')
-    tags: flatpak
+    - name: Adicionar repositório do vscode - Linux
+      ansible.builtin.apt_repository:
+        filename: vscode
+        repo: deb [arch=amd64] http://packages.microsoft.com/repos/vscode stable main
+        state: present
+        update_cache: true
+      when: ansible_os_family == 'Debian'
 
-  - name: Install the Firefox package from flathub
-    community.general.flatpak:
-      name: org.mozilla.firefox
-      state: present
-    when: (ansible_os_family == 'Debian')
-    tags: flatpak
+    - name: Instalar o vscode - Linux
+      ansible.builtin.apt:
+        name: code
+      when: ansible_os_family == 'Debian'
 
-  - name: Instalar o .deb warsaw - Linux Debian
-    ansible.builtin.apt:
-      deb: https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.deb
-    when: ansible_distribution == 'Debian'
+    - name: Remove source list duplicado do code
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/packages_microsoft_com_repos_vscode.list
+        state: absent
+      when: ansible_os_family == 'Debian'
+    # VSCode
 
-  - name: Install a .deb Google Chrome - Linux Debian
-    ansible.builtin.apt:
-      deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    when: ansible_os_family == 'Debian'
+    - name: Install Authy with snap
+      snap:
+        name: authy
+      when: (ansible_os_family == 'Debian')
+      tags: snap
 
-  # kubectl
-  - name: Adicionar a chave do Google Cloud public signing key
-    ansible.builtin.apt_key:
-      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-      keyring: /usr/share/keyrings/kubernetes-archive-keyring.gpg
-    when: (ansible_os_family == 'Debian')
+    - name: Add the flathub flatpak repository remote to the user installation
+      community.general.flatpak_remote:
+        name: flathub
+        state: present
+        flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+      when: (ansible_os_family == 'Debian')
 
-  - name: Adicionar repositório Kubernetes apt repository
-    ansible.builtin.apt_repository:
-      repo: deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
-      update_cache: yes
-    when: (ansible_os_family == 'Debian')
+    - name: Install the Discord package from flathub
+      community.general.flatpak:
+        name: com.discordapp.Discord
+        state: present
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
 
-  - name: Instalar kubectl e outros pacotes
-    ansible.builtin.apt:
-      state: latest
-      pkg:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - kubectl
-    when: (ansible_os_family == 'Debian')
+    - name: Install the telegram package from flathub
+      community.general.flatpak:
+        name: org.telegram.desktop
+        state: present
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
 
-  # Docker
-  - name: Adicionar a chave do repositório do docker no bullseye
-    ansible.builtin.apt_key:
-      url: https://download.docker.com/linux/debian/gpg
-      state: present
-    when: (ansible_os_family == 'Debian')
+    - name: Install the bitwarden package from flathub
+      community.general.flatpak:
+        name: com.bitwarden
+        state: present
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
 
-  - name: Adicionar repositório do docker no bullseye
-    ansible.builtin.apt_repository:
-      repo: deb [arch=amd64] https://download.docker.com/linux/debian buster stable
-      state: present
-      update_cache: yes
-    when: (ansible_os_family == 'Debian')
+    - name: Install the pomodoro package from flathub
+      community.general.flatpak:
+        name: org.gnome.Solanum
+        state: present
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
 
-  - name: Instalar pacotes necessários do Docker
-    ansible.builtin.apt:
-      state: latest
-      pkg:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg2
-      - software-properties-common
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-    when: (ansible_os_family == 'Debian')
+    - name: Install the Firefox package from flathub
+      community.general.flatpak:
+        name: org.mozilla.firefox
+        state: present
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
 
-  - name: Add the user 'humbertos' with a bash shell, appending the group 'docker'
-    ansible.builtin.user:
-      name: humbertos
-      groups: docker
-      append: yes
-    when: ansible_os_family == 'Debian'
+    - name: Instalar o .deb warsaw - Linux Debian
+      ansible.builtin.apt:
+        deb: https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.deb
+      when: ansible_distribution == 'Debian'
 
-# winehq
-  - name: Check if i386 is enabled
-    ansible.builtin.shell: dpkg --print-foreign-architectures | grep i386
-    register: result_i386_check
-    changed_when: result_i386_check.rc == 1
-    failed_when: result_i386_check.rc > 1
-    when: (ansible_os_family == 'Debian')
+    - name: Install a .deb Google Chrome - Linux Debian
+      ansible.builtin.apt:
+        deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      when: ansible_os_family == 'Debian'
 
-  - name: Enable i386 architecture
-    ansible.builtin.command: dpkg --add-architecture i386
-    when: (ansible_os_family == 'Debian')
+    # kubectl
+    - name: Adicionar a chave do Google Cloud public signing key
+      ansible.builtin.apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        keyring: /usr/share/keyrings/kubernetes-archive-keyring.gpg
+      when: (ansible_os_family == 'Debian')
 
-  - name: Download and install the repository key
-    ansible.builtin.apt_key:
-      url: https://dl.winehq.org/wine-builds/winehq.key
-    when: (ansible_os_family == 'Debian')
+    - name: Adicionar repositório Kubernetes apt repository
+      ansible.builtin.apt_repository:
+        repo: deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+        update_cache: true
+      when: (ansible_os_family == 'Debian')
 
-  - name: Adiciona repositório
-    ansible.builtin.apt_repository:
-      repo: deb https://dl.winehq.org/wine-builds/debian/ bullseye main
-      update_cache: yes
-    when: (ansible_os_family == 'Debian')
+    - name: Instalar kubectl e outros pacotes
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - kubectl
+      when: (ansible_os_family == 'Debian')
 
-  - name: Instala winehq e outros pacotes
-    ansible.builtin.apt:
-      state: latest
-      install_recommends: yes
-      pkg:
-      - winehq-stable
-      - q4wine
-    when: (ansible_os_family == 'Debian')
+    # Docker
+    - name: Adicionar a chave do repositório do docker no bullseye
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+      when: (ansible_os_family == 'Debian')
 
-  #Anydesk
-  - name: Adicionar a chave do repositório do AnyDesk
-    ansible.builtin.apt_key:
-      url: https://keys.anydesk.com/repos/DEB-GPG-KEY
-      state: present
-    when: ansible_os_family == 'Debian'
+    - name: Adicionar repositório do docker no bullseye
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/debian buster stable
+        state: present
+        update_cache: true
+      when: (ansible_os_family == 'Debian')
 
-  - name: Adicionar repositório AnyDesk
-    ansible.builtin.apt_repository:
-      repo: deb http://deb.anydesk.com/ all main
-    when: ansible_os_family == 'Debian'
+    - name: Instalar pacotes necessários do Docker
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg2
+          - software-properties-common
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+      when: (ansible_os_family == 'Debian')
 
-  - name: Instala AnyDesk
-    ansible.builtin.apt:
-      pkg:
-      - anydesk
-    when: ansible_os_family == 'Debian'
+    - name: Add the user 'humbertos' with a bash shell, appending the group 'docker'
+      ansible.builtin.user:
+        name: humbertos
+        groups: docker
+        append: true
+      when: ansible_os_family == 'Debian'
 
-  - name: Stop and disable service anydesk on debian, if running
-    ansible.builtin.systemd:
-      name: anydesk
-      state: stopped
-      enabled: no
-    when: ansible_os_family == 'Debian'
+    # Anydesk
+    - name: Adicionar a chave do repositório do AnyDesk
+      ansible.builtin.apt_key:
+        url: https://keys.anydesk.com/repos/DEB-GPG-KEY
+        state: present
+      when: ansible_os_family == 'Debian'
 
-  #TeamViewer
-  - name: Adicionar a chave do repositório do TeamViewer
-    ansible.builtin.apt_key:
-      url: https://download.teamviewer.com/download/linux/signature/TeamViewer2017.asc
-      state: present
-    when: ansible_os_family == 'Debian'
+    - name: Adicionar repositório AnyDesk
+      ansible.builtin.apt_repository:
+        repo: deb http://deb.anydesk.com/ all main
+      when: ansible_os_family == 'Debian'
 
-  - name: Adicionar repositório TeamViewer
-    ansible.builtin.apt_repository:
-      repo: deb https://linux.teamviewer.com/deb stable main
-    when: ansible_os_family == 'Debian'
+    - name: Instala AnyDesk
+      ansible.builtin.apt:
+        pkg:
+          - anydesk
+      when: ansible_os_family == 'Debian'
 
-  - name: Instala TeamViewer
-    ansible.builtin.apt:
-      pkg:
-      - teamviewer
-    when: ansible_os_family == 'Debian'
+    - name: Stop and disable service anydesk on debian, if running
+      ansible.builtin.systemd:
+        name: anydesk
+        state: stopped
+        enabled: false
+      when: ansible_os_family == 'Debian'
 
-  # atualização automática
-  - name: instala unattended-upgrades
-    ansible.builtin.apt:
-      pkg:
-      - unattended-upgrades
-    when: ansible_os_family == 'Debian'
+    # TeamViewer
+    - name: Adicionar a chave do repositório do TeamViewer
+      ansible.builtin.apt_key:
+        url: https://download.teamviewer.com/download/linux/signature/TeamViewer2017.asc
+        state: present
+      when: ansible_os_family == 'Debian'
 
-  - name: Define arquivo /etc/apt/apt.conf.d/50unattended-upgrades
-    ansible.builtin.copy:
+    - name: Adicionar repositório TeamViewer
+      ansible.builtin.apt_repository:
+        repo: deb https://linux.teamviewer.com/deb stable main
+      when: ansible_os_family == 'Debian'
+
+    - name: Instala TeamViewer
+      ansible.builtin.apt:
+        pkg:
+          - teamviewer
+      when: ansible_os_family == 'Debian'
+
+    # atualização automática
+    - name: Instala unattended-upgrades
+      ansible.builtin.apt:
+        pkg:
+          - unattended-upgrades
+      when: ansible_os_family == 'Debian'
+
+    - name: Define arquivo /etc/apt/apt.conf.d/50unattended-upgrades
+      ansible.builtin.copy:
         content: |
           Unattended-Upgrade::Origins-Pattern {
             "o=*";
@@ -531,10 +496,10 @@
         owner: 'root'
         group: 'root'
         mode: '0644'
-    when: ansible_os_family == 'Debian'
+      when: ansible_os_family == 'Debian'
 
-  - name: Define arquivo /etc/apt/apt.conf.d/20auto-upgrades
-    ansible.builtin.copy:
+    - name: Define arquivo /etc/apt/apt.conf.d/20auto-upgrades
+      ansible.builtin.copy:
         content: |
           APT::Periodic::Update-Package-Lists "1";
           APT::Periodic::Unattended-Upgrade "1";
@@ -542,10 +507,10 @@
         owner: 'root'
         group: 'root'
         mode: '0644'
-    when: ansible_os_family == 'Debian'
+      when: ansible_os_family == 'Debian'
 
-  - name: Define download das atualizações - /lib/systemd/system/apt-daily.timer
-    ansible.builtin.copy:
+    - name: Define download das atualizações - /lib/systemd/system/apt-daily.timer
+      ansible.builtin.copy:
         content: |
           [Unit]
           Description=Daily apt download activities
@@ -561,10 +526,10 @@
         owner: 'root'
         group: 'root'
         mode: '0644'
-    when: ansible_os_family == 'Debian'
+      when: ansible_os_family == 'Debian'
 
-  - name: Define instalação das atualizações - /lib/systemd/system/apt-daily-upgrade.timer
-    ansible.builtin.copy:
+    - name: Define instalação das atualizações - /lib/systemd/system/apt-daily-upgrade.timer
+      ansible.builtin.copy:
         content: |
           [Unit]
           Description=Daily apt upgrade and clean activities
@@ -581,9 +546,9 @@
         owner: 'root'
         group: 'root'
         mode: '0644'
-    when: ansible_os_family == 'Debian'
+      when: ansible_os_family == 'Debian'
 
-  - name: just force systemd to reread configs
-    ansible.builtin.systemd:
-      daemon_reload: yes
-    when: ansible_os_family == 'Debian'
+    - name: Just force systemd to reread configs
+      ansible.builtin.systemd:
+        daemon_reload: true
+      when: ansible_os_family == 'Debian'
