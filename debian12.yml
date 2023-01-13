@@ -253,7 +253,14 @@
 
     - name: Troca dono dos arquivos
       ansible.builtin.file:
-        path: /home/humbertos
+        path: /home/humbertos/.ansible.cfg
+        owner: humbertos
+        group: humbertos
+      when: ansible_os_family == 'Debian'
+
+    - name: Troca dono dos arquivos
+      ansible.builtin.file:
+        path: /home/humbertos/.ansible/
         owner: humbertos
         group: humbertos
         recurse: true
