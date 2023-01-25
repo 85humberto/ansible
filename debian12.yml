@@ -140,6 +140,8 @@
             User root
             StrictHostKeyChecking no
             IdentityFile ~/.ssh/id_ed25519
+            KexAlgorithms diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1
+            HostKeyAlgorithms ssh-rsa
         dest: /home/humbertos/.ssh/config
         owner: humbertos
         group: humbertos
