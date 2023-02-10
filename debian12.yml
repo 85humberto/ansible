@@ -251,6 +251,7 @@
           - command-not-found
           - tcpdump
           - telnet
+          - zsh
       when: ansible_os_family == 'Debian'
 
     - name: Troca dono dos arquivos
@@ -285,7 +286,7 @@
       when: (ansible_os_family == 'Debian')
 
     - name: Install Authy with snap
-      snap:
+      community.general.snap:
         name: authy
       when: (ansible_os_family == 'Debian')
       tags: snap
