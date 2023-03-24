@@ -156,6 +156,7 @@
           [defaults]
           interpreter_python=auto_silent
           collections_paths=collections
+          forks=50
         dest: /home/humbertos/.ansible.cfg
         owner: humbertos
         group: humbertos
