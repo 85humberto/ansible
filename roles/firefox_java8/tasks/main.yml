@@ -22,7 +22,7 @@
     dest: /usr/share/applications/firefox-esr-52.9.desktop
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   when: (ansible_os_family == 'Debian')
 
 - name: Cria diretório /usr/lib/jvm
@@ -60,7 +60,7 @@
     dest: /usr/share/applications/jcontrol.desktop
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   when: (ansible_os_family == 'Debian')
 
 - name: Cria diretório /home/humbertos/.mozilla/plugins
