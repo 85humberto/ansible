@@ -1,0 +1,393 @@
+- name: Run the playbook tasks on the localhost
+  hosts: 127.0.0.1
+  connection: local
+
+  roles:
+    - firefox_java8
+    # - flashplayer
+
+  tasks:
+    - name: Configura o source.list
+      ansible.builtin.copy:
+        content: |
+          deb http://debian.pop-sc.rnp.br/debian trixie main contrib non-free non-free-firmware
+          deb http://debian.pop-sc.rnp.br/debian trixie-updates main contrib non-free non-free-firmware
+          deb http://debian.pop-sc.rnp.br/debian trixie-backports main contrib non-free non-free-firmware
+
+          # Official Debian repositories
+          deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware
+          deb http://deb.debian.org/debian trixie-updates main contrib non-free non-free-firmware
+          deb http://deb.debian.org/debian trixie-backports main contrib non-free non-free-firmware
+          deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
+        dest: /etc/apt/sources.list
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_os_family == 'Debian'
+
+    # - name: Change /home/humbertos/.bashrc
+    #   ansible.builtin.copy:
+    #     content: |
+    #       # If not running interactively, don't do anything
+    #       case $- in
+    #           *i*) ;;
+    #             *) return;;
+    #       esac
+
+    #       # don't put duplicate lines or lines starting with space in the history.
+    #       # See bash(1) for more options
+    #       HISTCONTROL=ignoreboth
+
+    #       # append to the history file, don't overwrite it
+    #       shopt -s histappend
+
+    #       # Save and reload the history after each command finishes
+    #       export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+    #       export HISTTIMEFORMAT="%d/%m/%y %T "
+
+    #       # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+    #       HISTSIZE=100000
+    #       HISTFILESIZE=200000
+
+    #       # check the window size after each command and, if necessary,
+    #       # update the values of LINES and COLUMNS.
+    #       shopt -s checkwinsize
+
+    #       # set variable identifying the chroot you work in (used in the prompt below)
+    #       if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    #           debian_chroot=$(cat /etc/debian_chroot)
+    #       fi
+
+    #       # set a fancy prompt (non-color, unless we know we "want" color)
+    #       case "$TERM" in
+    #           xterm-color|*-256color) color_prompt=yes;;
+    #       esac
+
+    #       # uncomment for a colored prompt, if the terminal has the capability; turned
+    #       # off by default to not distract the user: the focus in a terminal window
+    #       # should be on the output of commands, not on the prompt
+    #       force_color_prompt=yes
+
+    #       if [ -n "$force_color_prompt" ]; then
+    #           if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    #         # We have color support; assume it's compliant with Ecma-48
+    #         # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    #         # a case would tend to support setf rather than setaf.)
+    #         color_prompt=yes
+    #           else
+    #         color_prompt=
+    #           fi
+    #       fi
+
+    #       if [ "$color_prompt" = yes ]; then
+    #           PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+    #       else
+    #           PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+    #       fi
+    #       unset color_prompt force_color_prompt
+
+    #       # If this is an xterm set the title to user@host:dir
+    #       case "$TERM" in
+    #       xterm*|rxvt*)
+    #           PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    #           ;;
+    #       *)
+    #           ;;
+    #       esac
+
+    #       # enable color support of ls and also add handy aliases
+    #       if [ -x /usr/bin/dircolors ]; then
+    #           test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    #           alias ls='ls --color=auto'
+    #           alias grep='grep --color=auto'
+    #           alias fgrep='fgrep --color=auto'
+    #           alias egrep='egrep --color=auto'
+    #       fi
+
+    #       # some more ls aliases
+    #       alias ll='ls -l'
+    #       alias la='ls -A'
+    #       alias l='ls -CF'
+
+    #       # enable programmable completion features (you don't need to enable
+    #       # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+    #       # sources /etc/bash.bashrc).
+    #       if ! shopt -oq posix; then
+    #         if [ -f /usr/share/bash-completion/bash_completion ]; then
+    #           . /usr/share/bash-completion/bash_completion
+    #         elif [ -f /etc/bash_completion ]; then
+    #           . /etc/bash_completion
+    #         fi
+    #       fi
+
+    #       # Enable kubectl autocompletion
+    #       source <(kubectl completion bash)
+
+    #       # Carrega variáveis de ambiente
+    #       source ~/.env
+
+    #     dest: /home/humbertos/.bashrc
+    #     owner: humbertos
+    #     group: humbertos
+    #     mode: '0644'
+    #     backup: true
+    #   when: ansible_os_family == 'Debian'
+
+    - name: Cria .ssh
+      ansible.builtin.file:
+        state: directory
+        path: /home/humbertos/.ssh
+        owner: humbertos
+        group: humbertos
+        mode: '0755'
+      when: ansible_os_family == 'Debian'
+      tags: ssh
+
+    - name: Cria ssh_config
+      ansible.builtin.copy:
+        content: |
+          Host *
+            User root
+            StrictHostKeyChecking no
+            IdentityFile ~/.ssh/id_ed25519
+        dest: /home/humbertos/.ssh/config
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
+      tags: ssh
+
+    - name: Cria ssh-add.desktop
+      ansible.builtin.copy:
+        content: |
+          [Desktop Entry]
+          Exec=ssh-add -q .ssh/id_rsa .ssh/id_ed25519
+          Name=ssh-add
+          Type=Application
+        dest: /home/humbertos/.config/autostart/ssh-add.desktop
+        owner: humbertos
+        group: humbertos
+        mode: '0755'
+        backup: true
+      when: ansible_os_family == 'Debian'
+      tags: ssh
+
+    - name: Cria /home/humbertos/.config/environment.d/
+      ansible.builtin.file:
+        state: directory
+        path: /home/humbertos/.config/environment.d/
+        owner: humbertos
+        group: humbertos
+        mode: '0755'
+      when: ansible_os_family == 'Debian'
+      tags: ssh
+
+    - name: Cria ssh_askpass.conf
+      ansible.builtin.copy:
+        content: |
+          SSH_ASKPASS=/usr/bin/ksshaskpass
+          SSH_ASKPASS_REQUIRE=prefer
+        dest: /home/humbertos/.config/environment.d/ssh_askpass.conf
+        owner: humbertos
+        group: humbertos
+        mode: '0755'
+        backup: true
+      when: ansible_os_family == 'Debian'
+      tags: ssh
+
+    - name: Cria .ansible.cfg
+      ansible.builtin.copy:
+        content: |
+          [defaults]
+          interpreter_python=auto_silent
+          collections_paths=collections
+          forks=50
+        dest: /home/humbertos/.ansible.cfg
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
+
+    - name: Add the user 'humbertos' with a bash shell, appending the group 'sudo'
+      ansible.builtin.user:
+        name: humbertos
+        groups: sudo
+        append: true
+      when: ansible_os_family == 'Debian'
+
+    - name: No password prompt for sudo user
+      ansible.builtin.copy:
+        content: |
+          %sudo ALL=(ALL) NOPASSWD: ALL
+        dest: /etc/sudoers.d/nopasswd
+        owner: root
+        group: root
+        mode: '0440'
+        backup: true
+      when: ansible_os_family == 'Debian'
+
+    - name: Script to disable IPv6
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+          echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        dest: /usr/local/bin/disable_ipv6
+        owner: root
+        group: root
+        mode: '0755'
+      when: ansible_os_family == 'Debian'
+
+    - name: Script to enable IPv6
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          echo 0 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+          echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        dest: /usr/local/bin/enable_ipv6
+        owner: root
+        group: root
+        mode: '0755'
+      when: ansible_os_family == 'Debian'
+
+    - name: Instalar pacotes padroes - Linux
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - vlc
+          - unrar
+          - ttf-mscorefonts-installer
+          - nmap
+          - mtr
+          - xournal
+          - ipcalc
+          - bash-completion
+          - git
+          - dnsutils
+          - ldap-utils
+          - flatpak
+          - make
+          - snapd
+          - ansible-lint
+          - snmp
+          - command-not-found
+          - tcpdump
+          - telnet
+          - zsh
+          - zsh-autosuggestions
+          - zsh-syntax-highlighting
+          - podman
+          - nautilus-dropbox
+          - curl
+          - ksshaskpass
+      when: ansible_os_family == 'Debian'
+
+    - name: Copia .zshrc
+      ansible.builtin.copy:
+        src: .zshrc
+        dest: /home/humbertos/.zshrc
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+      when: ansible_os_family == 'Debian'
+
+    - name: Troca dono dos arquivos
+      ansible.builtin.file:
+        path: /home/humbertos/.ansible.cfg
+        owner: humbertos
+        group: humbertos
+      when: ansible_os_family == 'Debian'
+
+    - name: Troca dono dos arquivos
+      ansible.builtin.file:
+        path: /home/humbertos/.ansible/
+        owner: humbertos
+        group: humbertos
+        recurse: true
+      when: ansible_os_family == 'Debian'
+
+    - name: Install Authy with snap
+      community.general.snap:
+        name: authy
+      when: (ansible_os_family == 'Debian')
+      tags: snap
+
+    - name: Add the flathub flatpak repository remote to the user installation
+      community.general.flatpak_remote:
+        name: flathub
+        state: present
+        flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+      when: (ansible_os_family == 'Debian')
+
+    - name: Install the Discord package from flathub
+      community.general.flatpak:
+        name: com.discordapp.Discord
+        state: present
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
+
+    - name: Install the telegram package from flathub
+      community.general.flatpak:
+        name: org.telegram.desktop
+        state: present
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
+
+    - name: Install the bitwarden package from flathub
+      community.general.flatpak:
+        name: com.bitwarden.desktop
+        state: present
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
+
+    - name: Install a .deb Google Chrome - Linux Debian
+      ansible.builtin.apt:
+        deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      when: ansible_os_family == 'Debian'
+
+    # Anydesk
+    - name: Adicionar a chave do repositório do AnyDesk
+      ansible.builtin.apt_key:
+        url: https://keys.anydesk.com/repos/DEB-GPG-KEY
+        state: present
+        keyring: /etc/apt/trusted.gpg.d/anydesk.gpg
+      when: ansible_os_family == 'Debian'
+
+    - name: Adicionar repositório AnyDesk
+      ansible.builtin.apt_repository:
+        repo: deb http://deb.anydesk.com/ all main
+      when: ansible_os_family == 'Debian'
+
+    - name: Instala AnyDesk
+      ansible.builtin.apt:
+        pkg:
+          - anydesk
+      when: ansible_os_family == 'Debian'
+
+    - name: Stop and disable service anydesk on debian, if running
+      ansible.builtin.systemd:
+        name: anydesk
+        state: stopped
+        enabled: false
+      when: ansible_os_family == 'Debian'
+
+    # TeamViewer
+    - name: Adicionar a chave do repositório do TeamViewer
+      ansible.builtin.apt_key:
+        url: https://download.teamviewer.com/download/linux/signature/TeamViewer2017.asc
+        state: present
+        keyring: /etc/apt/trusted.gpg.d/teamviewer.gpg
+      when: ansible_os_family == 'Debian'
+
+    - name: Adicionar repositório TeamViewer
+      ansible.builtin.apt_repository:
+        repo: deb https://linux.teamviewer.com/deb stable main
+      when: ansible_os_family == 'Debian'
+
+    - name: Instala TeamViewer
+      ansible.builtin.apt:
+        pkg:
+          - teamviewer
+      when: ansible_os_family == 'Debian'
