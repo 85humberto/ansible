@@ -177,7 +177,6 @@
           - ldap-utils
           - flatpak
           - make
-          - snapd
           - ansible-lint
           - snmp
           - command-not-found
@@ -227,12 +226,6 @@
         recurse: true
       when: ansible_os_family == 'Debian'
 
-    - name: Install Authy with snap
-      community.general.snap:
-        name: authy
-      when: (ansible_os_family == 'Debian')
-      tags: snap
-
     - name: Add the flathub flatpak repository remote to the user installation
       community.general.flatpak_remote:
         name: flathub
@@ -257,6 +250,13 @@
     - name: Install the bitwarden package from flathub
       community.general.flatpak:
         name: com.bitwarden.desktop
+        state: present
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
+
+    - name: Install the Authy package from flathub
+      community.general.flatpak:
+        name: com.authy.Authy
         state: present
       when: (ansible_os_family == 'Debian')
       tags: flatpak
@@ -309,7 +309,31 @@
 
     - name: Instala TeamViewer
       ansible.builtin.apt:
+        update_cache: true
         pkg:
           - teamviewer
       when: ansible_os_family == 'Debian'
       tags: teamviewer
+
+    # VSCodium
+    - name: Adicionar a chave do repositório do VSCodium
+      ansible.builtin.apt_key:
+        url: https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg
+        state: present
+        keyring: /usr/share/keyrings/vscodium-archive-keyring.gpg
+      when: ansible_os_family == 'Debian'
+      tags: vscodium
+
+    - name: Adicionar repositório VSCodium
+      ansible.builtin.apt_repository:
+        repo: "deb [ signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg ] https://download.vscodium.com/debs vscodium main"
+      when: ansible_os_family == 'Debian'
+      tags: vscodium
+
+    - name: Instala VSCodium
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - codium
+      when: ansible_os_family == 'Debian'
+      tags: vscodium
