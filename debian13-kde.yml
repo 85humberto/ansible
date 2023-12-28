@@ -190,6 +190,7 @@
           - curl
           - ksshaskpass
           - virt-manager
+          - wireplumber # compartilhamento de tela com wayland
       when: ansible_os_family == 'Debian'
 
     - name: Appending the group libvirt and libvirt-qemu
