@@ -269,13 +269,6 @@
       when: (ansible_os_family == 'Debian')
       tags: flatpak
 
-    - name: Install the VSCodium package from flathub
-      community.general.flatpak:
-        name: com.vscodium.codium
-        state: present
-      when: (ansible_os_family == 'Debian')
-      tags: flatpak
-
     # TeamViewer
     - name: Adicionar a chave do repositório do TeamViewer
       ansible.builtin.apt_key:
@@ -298,3 +291,26 @@
           - teamviewer
       when: ansible_os_family == 'Debian'
       tags: teamviewer
+
+    # VSCodium
+    - name: Adicionar a chave do repositório do VSCodium
+      ansible.builtin.apt_key:
+        url: https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg
+        keyring: /usr/share/keyrings/vscodium-archive-keyring.gpg
+      when: ansible_os_family == 'Debian'
+      tags: vscodium
+
+    - name: Adicionar repositório VSCodium
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg] https://download.vscodium.com/debs vscodium main"
+        filename: vscodium
+      when: ansible_os_family == 'Debian'
+      tags: vscodium
+
+    - name: Instala VSCodium
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - codium
+      when: ansible_os_family == 'Debian'
+      tags: vscodium
