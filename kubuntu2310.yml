@@ -7,16 +7,19 @@
     # - flashplayer
 
   tasks:
-    - name: Configura o source.list
+    - name: Configura o sources.list
       ansible.builtin.copy:
         content: |
           deb http://br.archive.ubuntu.com/ubuntu/ mantic main multiverse universe restricted
           deb http://br.archive.ubuntu.com/ubuntu/ mantic-security main multiverse universe restricted
+          deb http://br.archive.ubuntu.com/ubuntu/ mantic-updates main restricted universe multiverse
+          deb http://br.archive.ubuntu.com/ubuntu/ mantic-backports main restricted universe multiverse
         dest: /etc/apt/sources.list
         owner: root
         group: root
         mode: '0644'
       when: ansible_os_family == 'Debian'
+      tags: sources.list
 
     - name: Cria .ssh
       ansible.builtin.file:
@@ -192,6 +195,17 @@
           - curl
           - ksshaskpass
           - virt-manager
+          - libvirt-daemon-system
+      when: ansible_os_family == 'Debian'
+
+    - name: Appending the group libvirt and libvirt-qemu
+      ansible.builtin.user:
+        name: humbertos
+        groups: "{{ item }}"
+        append: true
+      loop:
+        - libvirt-qemu
+        - libvirt
       when: ansible_os_family == 'Debian'
 
     - name: Copia .zshrc
