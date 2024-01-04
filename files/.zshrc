@@ -1,7 +1,7 @@
 
 export ZSH="$HOME/.oh-my-zsh" # Path to your oh-my-zsh installation.
 
-ZSH_THEME="clean"
+ZSH_THEME="refined"
 
 zstyle ':omz:update' mode auto      # update automatically without asking
 
