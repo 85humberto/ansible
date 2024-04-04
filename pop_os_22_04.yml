@@ -1,0 +1,284 @@
+- name: Run the playbook tasks on the localhost
+  hosts: 127.0.0.1
+  connection: local
+
+  roles:
+    - firefox_java8
+    # - flashplayer
+
+  tasks:
+    - name: Cria .ssh
+      ansible.builtin.file:
+        state: directory
+        path: /home/humbertos/.ssh
+        owner: humbertos
+        group: humbertos
+        mode: '0755'
+      when: ansible_os_family == 'Debian'
+      tags: ssh
+
+    - name: Cria ssh_config
+      ansible.builtin.copy:
+        content: |
+          Host *
+            User root
+            StrictHostKeyChecking no
+            IdentityFile ~/.ssh/id_ed25519
+            KexAlgorithms +diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
+            HostKeyAlgorithms +ssh-rsa,ssh-dss
+            Ciphers +aes256-cbc
+        dest: /home/humbertos/.ssh/config
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
+      tags: ssh
+
+    - name: Cria .gitconfig
+      ansible.builtin.copy:
+        content: |
+          [user]
+            name = 85humberto
+            email = 85humberto@gmail.com
+        dest: /home/humbertos/.gitconfig
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
+      tags: gitconfig
+
+    - name: Cria .ansible.cfg
+      ansible.builtin.copy:
+        content: |
+          [defaults]
+          interpreter_python=auto_silent
+          collections_paths=collections
+          forks=50
+        dest: /home/humbertos/.ansible.cfg
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
+
+    - name: Add the user 'humbertos' with a bash shell, appending the group 'sudo'
+      ansible.builtin.user:
+        name: humbertos
+        groups: sudo
+        append: true
+      when: ansible_os_family == 'Debian'
+
+    - name: No password prompt for sudo user
+      ansible.builtin.copy:
+        content: |
+          %sudo ALL=(ALL) NOPASSWD: ALL
+        dest: /etc/sudoers.d/nopasswd
+        owner: root
+        group: root
+        mode: '0440'
+        backup: true
+      when: ansible_os_family == 'Debian'
+
+    - name: Script to disable IPv6
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+          echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        dest: /usr/local/bin/disable_ipv6
+        owner: root
+        group: root
+        mode: '0755'
+      when: ansible_os_family == 'Debian'
+
+    - name: Script to enable IPv6
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          echo 0 > /proc/sys/net/ipv6/conf/default/disable_ipv6
+          echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+        dest: /usr/local/bin/enable_ipv6
+        owner: root
+        group: root
+        mode: '0755'
+      when: ansible_os_family == 'Debian'
+
+    - name: Instalar pacotes padroes - Linux
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - vlc
+          - unrar
+          - nmap
+          - mtr
+          - xournal
+          - ipcalc
+          - bash-completion
+          - git
+          - transmission-gtk
+          - dnsutils
+          - ldap-utils
+          - flatpak
+          - gnome-software-plugin-flatpak
+          - gnome-tweaks
+          - nautilus-dropbox
+          - nautilus-admin
+          - nautilus-scripts-manager
+          - nautilus-image-converter
+          - network-manager-openvpn
+          - network-manager-openvpn-gnome
+          - network-manager-pptp
+          - network-manager-pptp-gnome
+          - system-config-printer
+          - cups
+          - printer-driver-cups-pdf
+          - remmina
+          - remmina-plugin-rdp
+          - remmina-plugin-vnc
+          - ansible-lint
+          - snmp
+          - rsync
+          - command-not-found
+          - tcpdump
+          - telnet
+          - zsh
+          - zsh-autosuggestions
+          - zsh-syntax-highlighting
+          - podman
+          - virt-manager
+          - chromium-browser
+          - chromium-browser-l10n
+          - konsole
+          - okular
+      when: ansible_os_family == 'Debian'
+
+    - name: Appending the group libvirt and libvirt-qemu
+      ansible.builtin.user:
+        name: humbertos
+        groups: "{{ item }}"
+        append: true
+      loop:
+        - libvirt-qemu
+        - libvirt
+      when: ansible_os_family == 'Debian'
+
+    - name: Copia .zshrc
+      ansible.builtin.copy:
+        src: .zshrc
+        dest: /home/humbertos/.zshrc
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+      when: ansible_os_family == 'Debian'
+
+    - name: Troca dono dos arquivos
+      ansible.builtin.file:
+        path: /home/humbertos/.ansible.cfg
+        owner: humbertos
+        group: humbertos
+      when: ansible_os_family == 'Debian'
+
+    - name: Troca dono dos arquivos
+      ansible.builtin.file:
+        path: /home/humbertos/.ansible/
+        owner: humbertos
+        group: humbertos
+        recurse: true
+      when: ansible_os_family == 'Debian'
+
+    - name: Remove pacotes
+      ansible.builtin.apt:
+        state: absent
+        autoremove: true
+        pkg:
+          - gnome-games
+          - evolution
+          - gnome-maps
+          - rhythmbox
+          - xterm
+          - totem
+          - gnome-todo
+          - gnome-contacts
+          - gnome-documents
+      when: (ansible_os_family == 'Debian')
+
+    - name: Add the flathub flatpak repository remote to the user installation
+      community.general.flatpak_remote:
+        name: flathub
+        state: present
+        flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+      when: (ansible_os_family == 'Debian')
+
+    - name: Install packages from flathub
+      community.general.flatpak:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - com.discordapp.Discord
+        - org.telegram.desktop
+        - com.anydesk.Anydesk
+      when: (ansible_os_family == 'Debian')
+      tags: flatpak
+
+    # TeamViewer
+    - name: Add repository key TeamViewer
+      ansible.builtin.apt_key:
+        url: https://linux.teamviewer.com/pubkey/currentkey.asc
+        state: present
+        keyring: /usr/share/keyrings/teamviewer-keyring.gpg
+      when: ansible_os_family == 'Debian'
+      tags: teamviewer
+
+    - name: Add repository TeamViewer
+      ansible.builtin.copy:
+        content: |
+          deb [signed-by=/usr/share/keyrings/teamviewer-keyring.gpg] https://linux.teamviewer.com/deb stable main
+        dest: /etc/apt/sources.list.d/teamviewer.list
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_os_family == 'Debian'
+      tags: teamviewer
+
+    - name: Install TeamViewer
+      ansible.builtin.apt:
+        # update_cache: true
+        pkg:
+          - teamviewer
+      when: ansible_os_family == 'Debian'
+      tags: teamviewer
+
+    # VSCodium
+    - name: Add repository key VSCodium
+      ansible.builtin.apt_key:
+        url: https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg
+        keyring: /usr/share/keyrings/vscodium-archive-keyring.gpg
+      when: ansible_os_family == 'Debian'
+      tags: vscodium
+
+    - name: Add repository VSCodium
+      ansible.builtin.copy:
+        content: |
+          deb [signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg] https://download.vscodium.com/debs vscodium main
+        dest: /etc/apt/sources.list.d/vscodium.list
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_os_family == 'Debian'
+      tags: vscodium
+
+    - name: Install VSCodium
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - codium
+      when: ansible_os_family == 'Debian'
+      tags: vscodium
+
+    - name: Instalar o .deb warsaw - Linux Debian
+      ansible.builtin.apt:
+        deb: https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.deb
+      when: ansible_os_family == 'Debian'
+      tags: warsaw
