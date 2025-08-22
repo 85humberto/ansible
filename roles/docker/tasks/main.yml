@@ -1,0 +1,55 @@
+- name: Instalar pacotes necessários do Docker
+  ansible.builtin.apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg2
+  when: (ansible_os_family == 'Debian')
+
+- name: Adicionar a chave do repositório do docker no Debian
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/trusted.gpg.d/docker.asc
+    mode: '0644'
+    owner: root
+    group: root
+  when: ansible_os_family == 'Debian'
+
+- name: Adicionar repositório do docker no trixie
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/docker.asc] https://download.docker.com/linux/debian trixie stable
+    state: present
+    update_cache: true
+    filename: docker
+  when: (ansible_os_family == 'Debian' and ansible_distribution_release == 'trixie')
+
+- name: Instala pacotes necessários para o funcionamento do rootless
+  ansible.builtin.apt:
+    update_cache: true
+    pkg:
+      - docker-ce-rootless-extras
+      - slirp4netns
+      - iptables
+      - docker-ce
+      - gnome-terminal
+      - uidmap
+  when: ansible_os_family == 'Debian'
+  tags: docker
+
+- name: Ativa o docker - nencessário para o IMUNES
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+  loop:
+    - docker.service
+    - docker.socket
+  when: ansible_os_family == 'Debian'
+  tags: services
+
+- name: Link para docker-compose
+  ansible.builtin.file:
+    src: /usr/libexec/docker/cli-plugins/docker-compose
+    dest: /usr/local/bin/docker-compose
+    state: link
+  when: ansible_os_family == 'Debian'

@@ -1,0 +1,4 @@
+- name: Instalar o .deb warsaw - Linux Debian
+  ansible.builtin.apt:
+    deb: https://cloud.gastecnologia.com.br/bb/downloads/ws/warsaw_setup64.deb
+  when: ansible_os_family == 'Debian'

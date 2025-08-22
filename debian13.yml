@@ -3,8 +3,9 @@
   connection: local
 
   roles:
-    # - firefox_java8
-    # - flashplayer
+    - docker
+    - java8-oracle
+    - warsaw
 
   tasks:
     - name: Configura o debian.sources
@@ -48,6 +49,23 @@
         mode: '0755'
       when: ansible_os_family == 'Debian'
       tags: ssh
+
+    - name: Cria ssh_config
+      ansible.builtin.copy:
+        content: |
+          Host *
+            User root
+            StrictHostKeyChecking no
+            IdentityFile ~/.ssh/id_ed25519
+            KexAlgorithms +diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
+            HostKeyAlgorithms +ssh-rsa,ssh-dss
+            Ciphers +aes256-cbc
+        dest: /home/humbertos/.ssh/config
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
 
     - name: Cria .gitconfig
       ansible.builtin.copy:
@@ -138,22 +156,7 @@
         dest: /home/humbertos/.zshrc
         owner: humbertos
         group: humbertos
-        mode: '0644'
-      when: ansible_os_family == 'Debian'
-
-    - name: Troca dono dos arquivos
-      ansible.builtin.file:
-        path: /home/humbertos/.ansible.cfg
-        owner: humbertos
-        group: humbertos
-      when: ansible_os_family == 'Debian'
-
-    - name: Troca dono dos arquivos
-      ansible.builtin.file:
-        path: /home/humbertos/.ansible/
-        owner: humbertos
-        group: humbertos
-        recurse: true
+        mode: '0600'
       when: ansible_os_family == 'Debian'
 
     - name: Add the flathub flatpak repository remote to the user installation
@@ -199,3 +202,8 @@
           - teamviewer
       when: ansible_os_family == 'Debian'
       tags: teamviewer
+
+    - name: Install vscode from url
+      ansible.builtin.apt:
+        deb: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
+      when: ansible_os_family == 'Debian'
