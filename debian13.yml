@@ -53,19 +53,22 @@
     - name: Cria ssh_config
       ansible.builtin.copy:
         content: |
-          Host *
-            User root
+          Host 172.18.119.*
+            User admin
             StrictHostKeyChecking no
             IdentityFile ~/.ssh/id_ed25519
             KexAlgorithms +diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
-            HostKeyAlgorithms +ssh-rsa,ssh-dss
+            HostKeyAlgorithms +ssh-rsa
             Ciphers +aes256-cbc
+          Host *
+            User root
         dest: /home/humbertos/.ssh/config
         owner: humbertos
         group: humbertos
         mode: '0644'
         backup: true
       when: ansible_os_family == 'Debian'
+      tags: ssh
 
     - name: Cria .gitconfig
       ansible.builtin.copy:
@@ -182,16 +185,22 @@
 
     # TeamViewer
     - name: Adicionar a chave do repositório do TeamViewer
-      ansible.builtin.apt_key:
+      ansible.builtin.get_url:
         url: https://linux.teamviewer.com/pubkey/currentkey.asc
-        state: present
-        keyring: /usr/share/keyrings/teamviewer-keyring.gpg
+        dest: /usr/share/keyrings/teamviewer-keyring.gpg
+        mode: '0644'
+        owner: root
+        group: root
       when: ansible_os_family == 'Debian'
       tags: teamviewer
 
     - name: Adicionar repositório TeamViewer
-      ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/teamviewer-keyring.gpg] https://linux.teamviewer.com/deb stable main"
+      ansible.builtin.copy:
+        content: "deb [signed-by=/usr/share/keyrings/teamviewer-keyring.gpg] https://linux.teamviewer.com/deb stable main"
+        dest: /etc/apt/sources.list.d/teamviewer.list
+        owner: root
+        group: root
+        mode: '0644'
       when: ansible_os_family == 'Debian'
       tags: teamviewer
 
@@ -207,3 +216,4 @@
       ansible.builtin.apt:
         deb: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
       when: ansible_os_family == 'Debian'
+      tags: vscode
