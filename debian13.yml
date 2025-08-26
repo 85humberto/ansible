@@ -83,6 +83,21 @@
         backup: true
       when: ansible_os_family == 'Debian'
 
+    - name: Cria .ansible.cfg
+      ansible.builtin.copy:
+        content: |
+          [defaults]
+          interpreter_python=auto_silent
+          collections_paths=collections
+          forks=50
+          deprecation_warnings=False
+        dest: /home/humbertos/.ansible.cfg
+        owner: humbertos
+        group: humbertos
+        mode: '0644'
+        backup: true
+      when: ansible_os_family == 'Debian'
+
     - name: Add the user 'humbertos' to group 'sudo'
       ansible.builtin.user:
         name: humbertos
