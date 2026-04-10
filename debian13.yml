@@ -56,12 +56,15 @@
           Host 172.18.119.*
             User admin
             StrictHostKeyChecking no
-            IdentityFile ~/.ssh/id_ed25519
             KexAlgorithms +diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
             HostKeyAlgorithms +ssh-rsa
+            PubkeyAcceptedAlgorithms +ssh-rsa
             Ciphers +aes256-cbc
+
           Host *
             User root
+            StrictHostKeyChecking no
+            IdentityFile ~/.ssh/id_ed25519
         dest: /home/humbertos/.ssh/config
         owner: humbertos
         group: humbertos
